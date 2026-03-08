@@ -1,13 +1,13 @@
-# 🥋 MMA Academy Ledger – Solana Smart Contract
+# 🥋 MMA Registry – Solana
 
-## 📝 Resumen del Proyecto
-**MMA Academy Ledger** es un programa descentralizado desarrollado con el **Anchor Framework** en la blockchain de **Solana**. Su función principal es permitir que entrenadores y dueños de gimnasios gestionen un registro profesional de sus atletas de forma inmutable.
+## 📝 Resumen del proyecto
+**MMA Registry** es un programa descentralizado desarrollado con el **Anchor Framework** en la blockchain de **Solana**. Su función principal es permitir que entrenadores y dueños de gimnasios gestionen un registro profesional de sus atletas de forma inmutable.
 
 A diferencia de un sistema tradicional, toda la información de los peleadores (récord, estilo y contacto) se almacena **on-chain** dentro de una cuenta segura y verificable.
 
 ---
 
-## 🏗️ Arquitectura del Proyecto
+## 🏗️ Arquitectura del proyecto
 Este repositorio está diseñado para trabajar en el entorno de **Solana Playground** y sigue la estructura estándar de Anchor:
 
 * **`src/lib.rs`**: Contiene el Smart Contract escrito en Rust con las reglas de negocio y seguridad.
@@ -29,7 +29,7 @@ Esto garantiza que:
 
 ---
 
-## 📦 Estructuras de Datos
+## 📦 Estructuras de datos
 
 ### Academia
 Es la cuenta principal que actúa como base de datos del gimnasio.
@@ -45,7 +45,7 @@ Representa la ficha técnica y deportiva de un atleta.
 
 ---
 
-## 🚀 Instrucciones del Programa
+## 🚀 Instrucciones del programa
 El contrato expone las siguientes capacidades técnicas:
 
 ### 1️⃣ crear_academia
@@ -62,19 +62,19 @@ Remueve permanentemente a un peleador del vector para mantener la base de datos 
 
 ---
 
-## 🔐 Seguridad y Validaciones
+## 🔐 Seguridad y validaciones
 * **Signer Validation**: Todas las funciones de edición requieren que la wallet que firma sea el `owner` original.
 * **Cálculo de Espacio**: Se utiliza `InitSpace` para reservar exactamente la memoria necesaria, optimizando costos en Solana.
 * **Manejo de Errores**: Incluye errores personalizados como `NoEresElOwner` y `PeleadorNoExiste` para evitar operaciones inválidas.
 
 ---
 
-## 🛠️ Cómo ejecutar en Solana Playground
+## 🛠️ Cómo ejecutar en solana playground
 1. **Abrir SolPG**: Entra a [beta.solpg.io](https://beta.solpg.io).
 2. **Importar**: Copia el código de `lib.rs` en la carpeta `src`.
 3. **Compilar**: Presiona el botón **Build**.
 4. **Desplegar**: Presiona **Deploy** en la red de Devnet.
-5. **Interacción**: Usa la pestaña de instrucciones o el script en `client.ts` para realizar pruebas.
+5. **Interacción**: Usa la pestaña de tests para realizar pruebas.
 
 ---
 
