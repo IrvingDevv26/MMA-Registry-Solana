@@ -78,4 +78,4 @@ Remueve permanentemente a un peleador del vector para mantener la base de datos 
 
 ---
 
-**Proyecto desarrollado para la gestión de datos on-chain en entornos de MMA.**
+**Proyecto desarrollado por Irving de Jesus Davila Torres.**
