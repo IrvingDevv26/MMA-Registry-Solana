@@ -1,83 +1,81 @@
-🥋 MMA Academy Ledger – Solana Smart Contract
-📝 Resumen del Proyecto
-MMA Academy Ledger es un programa descentralizado desarrollado con el Anchor Framework en la blockchain de Solana. Su función principal es permitir que entrenadores y dueños de gimnasios gestionen un registro profesional de sus atletas de forma inmutable.
+# 🥋 MMA Academy Ledger – Solana Smart Contract
 
-A diferencia de un sistema tradicional, toda la información de los peleadores (récord, estilo y contacto) se almacena on-chain dentro de una cuenta segura y verificable.
+## 📝 Resumen del Proyecto
+**MMA Academy Ledger** es un programa descentralizado desarrollado con el **Anchor Framework** en la blockchain de **Solana**. Su función principal es permitir que entrenadores y dueños de gimnasios gestionen un registro profesional de sus atletas de forma inmutable.
 
-🏗️ Arquitectura del Proyecto
-Este repositorio está diseñado para trabajar en el entorno de Solana Playground y sigue la estructura estándar de Anchor:
+A diferencia de un sistema tradicional, toda la información de los peleadores (récord, estilo y contacto) se almacena **on-chain** dentro de una cuenta segura y verificable.
 
-src/lib.rs: Contiene el Smart Contract escrito en Rust con las reglas de negocio y seguridad.
+---
 
-client/client.ts: Script de TypeScript para interactuar con las funciones del contrato desde el navegador.
+## 🏗️ Arquitectura del Proyecto
+Este repositorio está diseñado para trabajar en el entorno de **Solana Playground** y sigue la estructura estándar de Anchor:
 
-tests/: Carpeta para pruebas unitarias que validan el comportamiento del programa.
+* **`src/lib.rs`**: Contiene el Smart Contract escrito en Rust con las reglas de negocio y seguridad.
+* **`client/client.ts`**: Script de TypeScript para interactuar con las funciones del contrato desde el navegador.
+* **`tests/`**: Carpeta para pruebas unitarias que validan el comportamiento del programa.
 
-🧠 Funcionamiento de las PDAs
-Cada usuario posee una Academia única vinculada a su llave pública mediante una cuenta PDA (Program Derived Address).
+---
 
-Semillas utilizadas:
-seeds = ["dojo", owner_public_key]
+## 🧠 Funcionamiento de las PDAs
+Cada usuario posee una **Academia** única vinculada a su llave pública mediante una cuenta PDA (Program Derived Address).
+
+**Semillas utilizadas:**
+`seeds = ["dojo", owner_public_key]`
 
 Esto garantiza que:
+1. Cada entrenador tiene **un solo registro centralizado**.
+2. Nadie más puede modificar los datos de una academia que no le pertenece.
+3. La cuenta se deriva de forma determinística sin necesidad de guardar direcciones adicionales.
 
-Cada entrenador tiene un solo registro centralizado.
+---
 
-Nadie más puede modificar los datos de una academia que no le pertenece.
+## 📦 Estructuras de Datos
 
-La cuenta se deriva de forma determinística sin necesidad de guardar direcciones adicionales.
+### Academia
+Es la cuenta principal que actúa como base de datos del gimnasio.
+* **owner**: Llave pública del administrador.
+* **nombre**: Nombre oficial de la institución.
+* **peleadores**: Vector (`Vec`) que almacena la lista de atletas registrados.
 
-📦 Estructuras de Datos
-Academia
-Es la cuenta principal que almacena el inventario de atletas.
+### Peleador
+Representa la ficha técnica y deportiva de un atleta.
+* **Datos Personales**: Nombre, Apodo, Origen y Contacto.
+* **Estadísticas**: Victorias, Derrotas, Empates y KOs almacenados como `u16`.
+* **Estado**: Valor booleano para indicar si el peleador está activo o retirado.
 
-owner: Llave pública del administrador.
+---
 
-nombre: Nombre oficial del gimnasio.
-
-peleadores: Vector (Vec) que contiene hasta 10 perfiles detallados.
-
-Peleador
-Representa la ficha técnica de un atleta.
-
-Datos Personales: Nombre, Apodo, Origen y Contacto.
-
-Estadísticas: Victorias, Derrotas, Empates y KOs (almacenados como u16).
-
-Estado: Valor booleano para indicar si el peleador está activo o retirado.
-
-🚀 Instrucciones del Programa
+## 🚀 Instrucciones del Programa
 El contrato expone las siguientes capacidades técnicas:
 
-1️⃣ crear_academia
-Inicializa el registro del dojo en la red. Establece al firmante como el único dueño con permisos de escritura.
+### 1️⃣ crear_academia
+Inicializa el registro del dojo en la red y establece al firmante como el único dueño con permisos de escritura.
 
-2️⃣ agregar_peleador
-Inserta un perfil completo en el roster. Permite definir el estilo de pelea (Striker, Grappler, etc.) y los medios de contacto desde el registro inicial.
+### 2️⃣ agregar_peleador
+Inserta un perfil completo en el roster, permitiendo definir el estilo de pelea y medios de contacto desde el inicio.
 
-3️⃣ alternar_estado
-Cambia la disponibilidad del peleador. Si un atleta se lesiona o se retira, su estado cambia a inactivo sin borrar su historial de la cuenta.
+### 3️⃣ alternar_estado
+Permite modificar la disponibilidad del peleador (activo/inactivo) sin borrar su historial de la cuenta.
 
-4️⃣ eliminar_peleador
-Remueve permanentemente a un peleador del vector, liberando espacio en la cuenta de la academia.
+### 4️⃣ eliminar_peleador
+Remueve permanentemente a un peleador del vector para mantener la base de datos eficiente.
 
-5️⃣ ver_peleadores
-Función de auditoría que imprime el estado actual de la academia en los logs para verificar la integridad de la información.
+---
 
-🔐 Seguridad y Validaciones
-Signer Validation: Todas las funciones de edición requieren que la wallet que firma sea el owner original de la academia.
+## 🔐 Seguridad y Validaciones
+* **Signer Validation**: Todas las funciones de edición requieren que la wallet que firma sea el `owner` original.
+* **Cálculo de Espacio**: Se utiliza `InitSpace` para reservar exactamente la memoria necesaria, optimizando costos en Solana.
+* **Manejo de Errores**: Incluye errores personalizados como `NoEresElOwner` y `PeleadorNoExiste` para evitar operaciones inválidas.
 
-Cálculo de Espacio: Se utiliza InitSpace para reservar exactamente la memoria necesaria, optimizando los costos de almacenamiento en Solana.
+---
 
-Manejo de Errores: Se incluyen errores personalizados como NoEresElOwner y PeleadorNoExiste para evitar transacciones inválidas.
+## 🛠️ Cómo ejecutar en Solana Playground
+1. **Abrir SolPG**: Entra a [beta.solpg.io](https://beta.solpg.io).
+2. **Importar**: Copia el código de `lib.rs` en la carpeta `src`.
+3. **Compilar**: Presiona el botón **Build**.
+4. **Desplegar**: Presiona **Deploy** en la red de Devnet.
+5. **Interacción**: Usa la pestaña de instrucciones o el script en `client.ts` para realizar pruebas.
 
-🛠️ Cómo ejecutar en Solana Playground
-Abrir SolPG: Entra a beta.solpg.io.
+---
 
-Importar: Copia el código de lib.rs en la carpeta src.
-
-Compilar: Presiona Build.
-
-Desplegar: Presiona Deploy en la red de Devnet.
-
-Interacción: Usa la pestaña de instrucciones o el script en client.ts para realizar pruebas.
+**Proyecto desarrollado para la gestión de datos on-chain en entornos de MMA.**
