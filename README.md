@@ -60,6 +60,11 @@ Permite modificar la disponibilidad del peleador (activo/inactivo) sin borrar su
 ### 4️⃣ eliminar_peleador
 Remueve permanentemente a un peleador del vector para mantener la base de datos eficiente.
 
+### 5️⃣ ver_peleadores
+Es una función de utilidad diseñada para la depuración y auditoría rápida. 
+* **Propósito**: Imprime directamente en los logs de la unidad de ejecución de Solana (`msg!`) el listado completo de los atletas registrados en la academia.
+* **Uso**: Permite verificar de forma inmediata si los cambios en el récord o en el estado de actividad se han grabado correctamente en la blockchain sin necesidad de consultar la cuenta mediante un explorador externo.
+
 ---
 
 ## 🔐 Seguridad y validaciones
