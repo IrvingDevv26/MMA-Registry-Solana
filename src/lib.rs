@@ -1,217 +1,235 @@
 use anchor_lang::prelude::*;
-// ID del Solana Program, este espacio se llena automaticamente al haver el "build"
+
+// ID del Solana Program, este espacio se llena automáticamente al hacer el "build"
 declare_id!("");
 
-#[program] // Macro que convierte codigo de Rust a Solana. Apartir de aqui empieza tu codigo!
-pub mod biblioteca {
-    use super::*; // Importa todas los structs y enums definidos fuera del modulo
+#[program] // Macro que convierte código de Rust a Solana. A partir de aquí empieza el código.
+pub mod registro_mma {
+    use super::*; // Importa todos los structs y enums definidos fuera del módulo
 
-    //////////////////////////// Instruccion: Crear Biblioteca /////////////////////////////////////
+    //////////////////////////// Instrucción: Crear Academia /////////////////////////////////////
     /*
-    Permite la creacion de una PDA (Program Derived Adress), un tipo especial de cuenta en solana que permite prescindir 
+    Permite la creación de una PDA (Program Derived Address), un tipo especial de cuenta en Solana que permite prescindir 
     del uso de llaves privadas para la firma de transacciones. 
 
-    Esta cuenta contendra el objeto (struct) de tipo Biblioteca donde podremos almacenar los Libros. 
-    La creacion de la PDA depende de 3 cosas:
-        * Wallet address 
+    Esta cuenta contendrá el objeto (struct) de tipo Academia donde podremos almacenar los Peleadores. 
+    La creación de la PDA depende de 3 cosas:
+        * Wallet address (owner)
         * Program ID 
-        * string representativo, regularmente relacionado con el nombre del proyecto
+        * string representativo, en este caso "academia"
     
-    La explicacion de esto continua en el struct NuevaBiblioteca
-
-    Parametros de entrada:
-        * nombre -> nombre de la biblioteca -> tipo string
+    Parámetros de entrada:
+        * nombre -> nombre de la academia -> tipo string
      */
-    pub fn crear_biblioteca(context: Context<NuevaBiblioteca>, nombre: String) -> Result<()> {
-        // "Context" siempre suele ir como primer parametro, ya que permite acceder al objeto o cuenta con el que queremos interactuar
-        // Dentro del context va al tipo de objeto o cuenta con el que deseamos interactuar. 
+    pub fn crear_academia(context: Context<NuevaAcademia>, nombre: String) -> Result<()> {
+        // "Context" siempre suele ir como primer parámetro, ya que permite acceder al objeto o cuenta con el que queremos interactuar
         let owner_id = context.accounts.owner.key(); // Accedemos al wallet address del caller 
-        msg!("Owner id: {}", owner_id); // Print de verificacion
+        msg!("Owner id: {}", owner_id); // Print de verificación
 
-        let libros: Vec<Libro> = Vec::new(); // Crea un vector vacio 
+        let peleadores: Vec<Peleador> = Vec::new(); // Crea un vector vacío 
 
-        // Creamos un Struct de tipo biblioteca y lo guardamos directamente 
-        context.accounts.biblioteca.set_inner(Biblioteca { 
+        // Creamos un Struct de tipo academia y lo guardamos directamente 
+        context.accounts.academia.set_inner(Academia { 
             owner: owner_id,
             nombre,
-            libros,
+            peleadores,
         });
-        Ok(()) // Representa una transaccion exitosa 
+        Ok(()) // Representa una transacción exitosa 
     }
 
-    //////////////////////////// Instruccion: Agregar Libro /////////////////////////////////////
+    //////////////////////////// Instrucción: Agregar Peleador /////////////////////////////////////
     /*
-    Agrega un libro al vector de libros ontenido en el struct Biblioteca. 
-    En este caso el contexto empleado es el struct NuevoLibro. Mientras que NuevaBiblioteca permite crear 
-    Instancias de una Biblioteca. NuevoLibro permite crear y modificar los valores relacionados a cualquier
-    struct de tipo Libro.
+    Agrega un peleador con todos los detalles de su perfil de combate al vector contenido en el struct Academia. 
+    NuevoPeleador permite crear y modificar los valores relacionados a cualquier struct de tipo Peleador.
 
-    Parametros de entrada:
-        * nombre -> nombre del libro -> string
-        * paginas -> numero de paginas del libro -> u16
+    Parámetros de entrada:
+        * nombre, apodo, origen, estilo, contacto -> tipo string
+        * victorias, derrotas, empates, kos -> tipo u16
      */ 
-    pub fn agregar_libro(context: Context<NuevoLibro>, nombre: String, paginas: u16) -> Result<()> {
-        require!( // Medida de seguridad para identificar que SOLO el owner de la biblioteca sea el que hace cambios en ella
-            context.accounts.biblioteca.owner == context.accounts.owner.key(), // Condicion, true -> continua, false -> error
-            Errores::NoEresElOwner // Codigo de error, ver enum Errores
+    pub fn agregar_peleador(
+        context: Context<NuevoPeleador>, 
+        nombre: String, 
+        apodo: String,
+        origen: String,
+        estilo: String,
+        contacto: String,
+        victorias: u16,
+        derrotas: u16,
+        empates: u16,
+        kos: u16
+    ) -> Result<()> {
+        require!( // Medida de seguridad para identificar que SOLO el owner de la academia sea el que hace cambios en ella
+            context.accounts.academia.owner == context.accounts.owner.key(), // Condición: true -> continúa, false -> error
+            Errores::NoEresElOwner 
         ); 
 
-        let libro = Libro { // Creacion de un struct tipo Libro
+        let peleador = Peleador { // Creación del struct tipo Peleador
             nombre,
-            paginas,
-            disponible: true,
+            apodo,
+            origen,
+            estilo,
+            contacto,
+            victorias,
+            derrotas,
+            empates,
+            kos,
+            activo: true, // El peleador se registra como activo por defecto
         };
 
-        context.accounts.biblioteca.libros.push(libro); // Agrega el Libro al vector de libros de Biblioteca
+        context.accounts.academia.peleadores.push(peleador); // Agrega el Peleador al vector
 
-        Ok(()) // Transaccion exitosa
+        Ok(()) 
     }
 
-    //////////////////////////// Instruccion: Eliminar Libro /////////////////////////////////////
+    //////////////////////////// Instrucción: Eliminar Peleador /////////////////////////////////////
     /*
-    Elimina un libro apartir de su nombre. Error si libro no existe, Error si vector vacio. 
+    Elimina un peleador a partir de su nombre. Error si el peleador no existe. 
 
-    Parametros de entrada:
-        * nombre -> Nombre del libro -> string
+    Parámetros de entrada:
+        * nombre -> Nombre del peleador -> string
      */
-    pub fn eliminar_libro(context: Context<NuevoLibro>, nombre: String) -> Result<()> {
+    pub fn eliminar_peleador(context: Context<NuevoPeleador>, nombre: String) -> Result<()> {
         require!( // Medida de seguridad
-            context.accounts.biblioteca.owner == context.accounts.owner.key(),
+            context.accounts.academia.owner == context.accounts.owner.key(),
             Errores::NoEresElOwner
         );
 
-        let libros = &mut context.accounts.biblioteca.libros; // Referencia mutable al vector de libros
+        let peleadores = &mut context.accounts.academia.peleadores; // Referencia mutable al vector
 
-        for i in 0..libros.len() { // Se itera mediante el indice todo el contenido del vector en busca del libro a eliminar
-            if libros[i].nombre == nombre { // Si lo encuentra prodece a borrarlo mediante el metodo remove
-                libros.remove(i);
-                msg!("Libro {} eliminado!", nombre); // Mensaje de borrado exitoso
-                return Ok(()); // Transaccion exitosa
+        for i in 0..peleadores.len() { // Itera mediante el índice en busca del peleador a eliminar
+            if peleadores[i].nombre == nombre { // Si lo encuentra, procede a borrarlo
+                peleadores.remove(i);
+                msg!("Peleador {} eliminado!", nombre); // Mensaje de borrado exitoso
+                return Ok(()); 
             }
         }
-        Err(Errores::LibroNoExiste.into()) // Transaccion fallida, nunca encontro el libro
+        Err(Errores::PeleadorNoExiste.into()) // Transacción fallida, no encontró al peleador
     }
 
-    //////////////////////////// Instruccion: Ver Libros /////////////////////////////////////
+    //////////////////////////// Instrucción: Ver Peleadores /////////////////////////////////////
     /*
-    Muestra en el log de la transaccion el contenido completo del vector de libros de la Biblioteca
-
-    Parametros de entrada:
-        Ninguno
+    Muestra en el log de la transacción el contenido completo del vector de peleadores.
      */
-    pub fn ver_libros(context: Context<NuevoLibro>) -> Result<()> {
+    pub fn ver_peleadores(context: Context<NuevoPeleador>) -> Result<()> {
         require!( // Medida de seguridad 
-            context.accounts.biblioteca.owner == context.accounts.owner.key(),
+            context.accounts.academia.owner == context.accounts.owner.key(),
             Errores::NoEresElOwner
         );
 
-        // :#? requiere que NuevoLibro tenga atributo Debug. Permite la visualizacion completa del vector en el log
-        msg!("La lista de libros actualmente es: {:#?}", context.accounts.biblioteca.libros); // Print en log
-        Ok(()) // Transaccion exitosa 
+        // :#? permite la visualización completa del vector en el log (requiere Debug)
+        msg!("La lista de peleadores actualmente es: {:#?}", context.accounts.academia.peleadores); 
+        Ok(()) 
     }
 
-    
-    //////////////////////////// Instruccion: Alternar Estado /////////////////////////////////////
-    /* 
-    Cambia el estado de disponible de false a true o de true a false.
+    //////////////////////////// Instrucción: Alternar Estado /////////////////////////////////////
+    /* Cambia el estado del peleador de inactivo (false) a activo (true) o viceversa.
 
-    Parametros de entrada:
-        * nombre -> Nombre del libro -> string
+    Parámetros de entrada:
+        * nombre -> Nombre del peleador -> string
      */
-    pub fn alternar_estado(context: Context<NuevoLibro>, nombre: String) -> Result<()> {
+    pub fn alternar_estado(context: Context<NuevoPeleador>, nombre: String) -> Result<()> {
         require!( // Medida de seguridad
-            context.accounts.biblioteca.owner == context.accounts.owner.key(),
+            context.accounts.academia.owner == context.accounts.owner.key(),
             Errores::NoEresElOwner
         );
 
-        let libros = &mut context.accounts.biblioteca.libros; // Referencia mutable al vector de libros
-        for i in 0..libros.len() { // Se itera mediante el indice el vector de libros
-            let estado = libros[i].disponible;  // Se almacena el estado del vector actual
+        let peleadores = &mut context.accounts.academia.peleadores; 
+        for i in 0..peleadores.len() { 
+            let estado = peleadores[i].activo;  
 
-            if libros[i].nombre == nombre { // Si ecuentra el nombre del libro procede a cambiar el valor del estado 
+            if peleadores[i].nombre == nombre { 
                 let nuevo_estado = !estado;
-                libros[i].disponible = nuevo_estado;
-                msg!("El libro: {} ahora tiene un valor de disponibilidad: {}", nombre, nuevo_estado); // log print de la nueva disponibilidad
-                return Ok(()); // Transaccion exitosa
+                peleadores[i].activo = nuevo_estado;
+                msg!("El peleador: {} ahora tiene un valor de actividad: {}", nombre, nuevo_estado); 
+                return Ok(()); 
             }
         }
 
-        Err(Errores::LibroNoExiste.into()) // Transaccion fallida, libro no existe
+        Err(Errores::PeleadorNoExiste.into()) 
     }
-
 }
 
 /*
-Codigos de error
-Todos los codigos se almacenan en un enum con la siguiente estructura:
-#[msg("MENSAJE DE ERROR")] (dentro de las comillas)
-NombreDelError, (En camel case)
+Códigos de error
+Todos los códigos se almacenan en un enum con la siguiente estructura:
+#[msg("MENSAJE DE ERROR")] 
+NombreDelError,
 */
 #[error_code]
 pub enum Errores {
-    #[msg("Error, no eres el propietario de la biblioteca que deseas modificar")]
+    #[msg("Error, no eres el propietario de la academia que deseas modificar")]
     NoEresElOwner,
-    #[msg("Error, el libro con el que deseas interactuar no existe")]
-    LibroNoExiste,
+    #[msg("Error, el peleador con el que deseas interactuar no existe")]
+    PeleadorNoExiste,
 }
 
-#[account] // Especifica que el strcut es una cuenta que se almacenara en la blockchain
+#[account] // Especifica que el struct es una cuenta que se almacenará en la blockchain
 #[derive(InitSpace)] // Genera la constante INIT_SPACE y determina el espacio de almacenamiento necesario 
-pub struct Biblioteca { // Define la Biblioteca
-    owner: Pubkey, // Pubkey es un formato de llave publica de 32 bytes 
+pub struct Academia { // Define la Academia (cuenta principal)
+    owner: Pubkey, // Pubkey es un formato de llave pública de 32 bytes 
 
-    #[max_len(60)] // Cantidad maxima de caracteres del string: nombre
+    #[max_len(60)] // Cantidad máxima de caracteres
     nombre: String,
 
-    #[max_len(10)] // Tamaño maximo del vector libros 
-    libros: Vec<Libro>,
+    #[max_len(10)] // Tamaño máximo del vector peleadores 
+    peleadores: Vec<Peleador>,
 }
 
 /*
-Struct interno o secundario (No es una cuenta). Se define por derive y cuenta con los siguientes atributos:
-    * AnchorSerialize -> Permite guardar el struct en la cuenta 
-    * AnchorDeserialize -> Permite leer su contenido desde la cuenta 
-    * Clone -> Para copiar su contenido o valores 
-    * InitSpace -> Calcula el tamaño necesario para ser almacenado en la blockchain
-    * PartialEq -> Para usar sus valores y compararlos con "=="
-    * Debug -> Para mostrarlo en log con ":?" o ":#?"
+Struct secundario para definir el perfil de un peleador. 
+Nota técnica: Se definen límites de caracteres (max_len) para cada String para calcular 
+correctamente el espacio en la blockchain (InitSpace).
 */
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, InitSpace, PartialEq, Debug)]
-pub struct Libro {
-    #[max_len(60)]
+pub struct Peleador {
+    #[max_len(50)]
     nombre: String,
 
-    // Los siguientes datos no rquieren de max_len porque ya estan definidos (numero de 16 bits y false o true)
-    paginas: u16, 
+    #[max_len(30)] // Ejemplo: "El Matador"
+    apodo: String,
 
-    disponible: bool,
+    #[max_len(40)] // Ejemplo: "Alicante, España" o "Tijuana, MX"
+    origen: String,
+
+    #[max_len(30)] // Ejemplo: "Jiu-Jitsu / Boxeo"
+    estilo: String,
+
+    #[max_len(50)] // Ejemplo: "@fightermma" o "contacto@correo.com"
+    contacto: String,
+
+    // Datos numéricos (u16)
+    victorias: u16, 
+    derrotas: u16,
+    empates: u16,
+    kos: u16,
+
+    // Estado en el roster
+    activo: bool,
 }
 
-
-// Creacion de los contextos para las instrucciones (funciones)
-#[derive(Accounts)] // Especifica que este struct describe las cuentas que se requieren para determinada instruccion
-pub struct NuevaBiblioteca<'info> { // contexto de la instruccion
+// Creación de los contextos para las instrucciones
+#[derive(Accounts)] // Especifica las cuentas necesarias para la instrucción de creación
+pub struct NuevaAcademia<'info> { 
     #[account(mut)] 
-    pub owner: Signer<'info>, // Se define que el owner como el que pagara la transaccion, por eso es mut, para que cambie el balance de la cuenta
+    pub owner: Signer<'info>, // Quien paga la transacción (mut para cambiar balance)
 
     #[account(
-        init, // Inidica que al llamar la instruccuion se creara una cuenta
-        // puede ser remplazado por "init_if_needed" para que solo se cree una vez por caller
-        payer = owner, // Se especifica que quien paga el llamado a la instruccion, en este caso llama la instruccion 
-        space = Biblioteca::INIT_SPACE + 8, // Se calcula el espacio requerido para almacenar el Solana Program On-Chain
-        seeds = [b"biblioteca", owner.key().as_ref()], // Se especifica que la cuenta es una PDA que depende de un string y el id del owner
-        bump // Metodo para determinar el el id de la biblioteca en base a lo anterior 
+        init, // Indica que se creará una cuenta
+        payer = owner, // Quien paga la renta de la cuenta 
+        space = Academia::INIT_SPACE + 8, // Cálculo del espacio (8 bytes para el discriminador de Anchor)
+        seeds = [b"dojo", owner.key().as_ref()], // PDA basada en un string y el id del owner
+        bump // Metodo para derivar la PDA de forma segura
     )]
-    pub biblioteca: Account<'info, Biblioteca>, // Se especifica que la cuenta creada (PDA) almacenara la biblioteca 
+    pub academia: Account<'info, Academia>, // La cuenta creada almacenará el struct Academia
 
-    pub system_program: Program<'info, System>, // Programa necesario para crear la cuenta 
+    pub system_program: Program<'info, System>, // Programa del sistema necesario para crear cuentas
 }
 
-// Contexto para la creacion y modificacion de libros 
-#[derive(Accounts)] // Especifica que este struct se requiere para todas las instrucciones relacionadas con la creacion o modificacion de Libro
-pub struct NuevoLibro<'info> {
-    pub owner: Signer<'info>, // El owner de la cuenta es quien paga la transaccion
+// Contexto para la modificación de peleadores dentro de la academia existente
+#[derive(Accounts)] 
+pub struct NuevoPeleador<'info> {
+    pub owner: Signer<'info>, // Quien firma la transacción
 
     #[account(mut)] 
-    pub biblioteca: Account<'info, Biblioteca>, // Se marca biblioteca como mutable porque se modificara tanto el vector como los libros que contiene
+    pub academia: Account<'info, Academia>, // Mutable porque modificaremos su vector interno
 }
