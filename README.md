@@ -1,60 +1,83 @@
-# Biblioteca en Solana
+🥋 MMA Academy Ledger – Solana Smart Contract
+📝 Resumen del Proyecto
+MMA Academy Ledger es un programa descentralizado desarrollado con el Anchor Framework en la blockchain de Solana. Su función principal es permitir que entrenadores y dueños de gimnasios gestionen un registro profesional de sus atletas de forma inmutable.
 
-![banner](./images/banner-biblioteca.jpg)
+A diferencia de un sistema tradicional, toda la información de los peleadores (récord, estilo y contacto) se almacena on-chain dentro de una cuenta segura y verificable.
 
-CRUD básico de un Solana Program desarrollado con Rust y Anchor desde el Solana Playground. 
+🏗️ Arquitectura del Proyecto
+Este repositorio está diseñado para trabajar en el entorno de Solana Playground y sigue la estructura estándar de Anchor:
 
-Puedes comenzar dándole Fork a este repositorio (abajo te explicamos como 👇), **hemos preparado un entorno de codespaces listo para que no tengas que instalar nada**, solo déjate llevar por la fluidez de los ejercicios y temas desarrollados especialmente para ti. 
+src/lib.rs: Contiene el Smart Contract escrito en Rust con las reglas de negocio y seguridad.
 
-Asegúrate de clonar este repositorio a tu cuenta usando el botón **`Fork`**.
+client/client.ts: Script de TypeScript para interactuar con las funciones del contrato desde el navegador.
 
-![fork](./images/fork.png)
+tests/: Carpeta para pruebas unitarias que validan el comportamiento del programa.
 
-## Importando el proyecto 
+🧠 Funcionamiento de las PDAs
+Cada usuario posee una Academia única vinculada a su llave pública mediante una cuenta PDA (Program Derived Address).
 
-Ya con el repositorio en tu cuenta lo siguiente que debes hacer copiar el `enlace de tu repositorio`, lo que se puede hacer directamente desdel navegador:
+Semillas utilizadas:
+seeds = ["dojo", owner_public_key]
 
-![repo](./images/repo.png)
-Posteriormente, lo uniremos con el siguiente enlace en nuestro navegador de preferencia:
+Esto garantiza que:
 
-```url
-https://beta.solpg.io/
-```
+Cada entrenador tiene un solo registro centralizado.
 
-Lo que nos dará algo parecido a:
+Nadie más puede modificar los datos de una academia que no le pertenece.
 
-![url](./images/url.png)
+La cuenta se deriva de forma determinística sin necesidad de guardar direcciones adicionales.
 
-Al pulsar enter seremos enviados al `Solana Playground` con nuestro proyecto abierto:
+📦 Estructuras de Datos
+Academia
+Es la cuenta principal que almacena el inventario de atletas.
 
-![pg](./images/pg.png)
+owner: Llave pública del administrador.
 
-Para guardarlo solo damos clic en el boton `import` y asignamos un nombre:
+nombre: Nombre oficial del gimnasio.
 
-![import](./images/import.png)
+peleadores: Vector (Vec) que contiene hasta 10 perfiles detallados.
 
-## Preparacion del entorno
+Peleador
+Representa la ficha técnica de un atleta.
 
-Primero conectaremos el entorno con la devnet, lo que tambien procederá a la creación de una wallet. Para eso daremos clic en donde dice **Not Conected**:
+Datos Personales: Nombre, Apodo, Origen y Contacto.
 
-![playground1](./images/playground1.png)
+Estadísticas: Victorias, Derrotas, Empates y KOs (almacenados como u16).
 
-Saldrá la siguiente ventana donde daremos en el botón **Continue**:
+Estado: Valor booleano para indicar si el peleador está activo o retirado.
 
-![wallet](./images/wallet.png)
+🚀 Instrucciones del Programa
+El contrato expone las siguientes capacidades técnicas:
 
-Como resultado se mostrará la siguiente información:
+1️⃣ crear_academia
+Inicializa el registro del dojo en la red. Establece al firmante como el único dueño con permisos de escritura.
 
-![status](./images/status.png)
+2️⃣ agregar_peleador
+Inserta un perfil completo en el roster. Permite definir el estilo de pelea (Striker, Grappler, etc.) y los medios de contacto desde el registro inicial.
 
-* En verde: el estado de la conexión y el entorno al que se encuentra conectado
+3️⃣ alternar_estado
+Cambia la disponibilidad del peleador. Si un atleta se lesiona o se retira, su estado cambia a inactivo sin borrar su historial de la cuenta.
 
-* En amarillo: la la dirección de la wallet conectada
+4️⃣ eliminar_peleador
+Remueve permanentemente a un peleador del vector, liberando espacio en la cuenta de la academia.
 
-* En azul: la cantidad de tokens en la wallet
+5️⃣ ver_peleadores
+Función de auditoría que imprime el estado actual de la academia en los logs para verificar la integridad de la información.
 
-> ℹ️ ¿Quieres ver el ejemplo de un "Hola Mundo" en Solana?. Da clic aquí: 👉 [Ver Ejemplo](https://github.com/WayLearnLatam/Solana-starter-kit/tree/1fc6349ba63375a3fe223d8d56911bc64765459b/build-deploy)
+🔐 Seguridad y Validaciones
+Signer Validation: Todas las funciones de edición requieren que la wallet que firma sea el owner original de la academia.
 
-> ℹ️ ¿Cuentas con una Wallet de [Phantom](https://phantom.com/) que deseas importar?, Da clic aquí para ver como hacerlo: 
+Cálculo de Espacio: Se utiliza InitSpace para reservar exactamente la memoria necesaria, optimizando los costos de almacenamiento en Solana.
 
-👉 [Como Importar una Wallet](https://github.com/WayLearnLatam/Solana-starter-kit/tree/1fc6349ba63375a3fe223d8d56911bc64765459b/import-key-a-playground)
+Manejo de Errores: Se incluyen errores personalizados como NoEresElOwner y PeleadorNoExiste para evitar transacciones inválidas.
+
+🛠️ Cómo ejecutar en Solana Playground
+Abrir SolPG: Entra a beta.solpg.io.
+
+Importar: Copia el código de lib.rs en la carpeta src.
+
+Compilar: Presiona Build.
+
+Desplegar: Presiona Deploy en la red de Devnet.
+
+Interacción: Usa la pestaña de instrucciones o el script en client.ts para realizar pruebas.
